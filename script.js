@@ -182,21 +182,21 @@ const displayController = (function () {
                     let activePlayer = gameController.getActivePlayer()
                     message.textContent = `the winner is ${activePlayer.name}`;
                     boardEnabled = false;
+                    currentTurn.textContent = "";
                 }
                 if (result === "draw") {
                     message.textContent = `The game is drawn!`;
                     boardEnabled = false;
+                    currentTurn.textContent = "";
                 }
 
                 if (result === "continue") {
                     let activePlayer = gameController.getActivePlayer()
                     currentTurn.textContent = `Current Player: ${activePlayer.name}`
                 };
-
-    };
-
+      };
+    }
     board.addEventListener("click", handleBoard);
-}
     
     function renderBoard() {
         let boardArray = gameBoard.getBoard();
@@ -220,6 +220,7 @@ const displayController = (function () {
         boardEnabled = true;
         gameController.startGame(player1.value, player2.value);
         message.textContent = "Game started";
+        renderBoard()
     });
 
     resetButton.addEventListener("click", function() {
@@ -229,6 +230,7 @@ const displayController = (function () {
         renderBoard();
         boardEnabled = false;
         message.textContent = "Game was reset";
+        currentTurn.textContent = "";
     })
 
-    })();
+})();
