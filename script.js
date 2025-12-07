@@ -1,135 +1,234 @@
 const gameBoard = (function() {
-    let gameGrid = [" ", " "," "," ", " "," "," ", " "," "];
+    const gameGrid = Array(9).fill("");
 
-    const showGame = function() {
-        console.log(gameGrid);
+
+    function getBoard() {
+        return [...gameGrid];
     }
 
-    const addMark = function(index, mark = "X") {
-        if (gameGrid[index] == ' ') {
-            gameGrid[index] = mark;
-            return true;
-        } else {
+    function updateBoard(index, mark) {
+        gameGrid[index] = mark;
+    }
+
+    function resetBoard() {
+        gameGrid.fill("");
+    }
+
+    return { getBoard, updateBoard, resetBoard };
+})();
+
+
+function createPlayer(name, mark) {
+    
+    return { name, mark };
+};
+
+
+
+
+const gameController = (function() {
+    let playerOne;
+    let playerTwo;
+    let gameOver;
+    let currentPlayer;
+
+
+
+    function isValid(index) {
+        if (gameOver === true) {
             return false;
         }
         
-    };
+        const board = gameBoard.getBoard();
+        if (((index >= 0) && (index <= 8) && (board[index] === ""))) {
+            return true;
+        };
+        return false;
+    }
 
-    const checkWinner = function() { 
-        let winFlag = false;
-
-        if (((gameGrid[0] == gameGrid[1]) && (gameGrid[1] == gameGrid[2])) && (gameGrid[0] !== " ")) {
-            winFlag = true;
-            return winFlag;
-        }; 
-        if (((gameGrid[3] == gameGrid[4]) && (gameGrid[4] == gameGrid[5])) && (gameGrid[3] !== " ")) {
-            winFlag = true;
-            return winFlag;
-        };
-
-        if (((gameGrid[6] == gameGrid[7]) && (gameGrid[7] == gameGrid[8])) && (gameGrid[6] !== " ")) {
-            winFlag = true;
-            return winFlag;
-        };
-        
-        if (((gameGrid[0] == gameGrid[3]) && (gameGrid[3] == gameGrid[6])) && (gameGrid[0] !== " ")) {
-            winFlag = true;
-            return winFlag;
-        };
-        
-        if (((gameGrid[1] == gameGrid[4]) && (gameGrid[4] == gameGrid[7])) && (gameGrid[1] !== " ")) {
-            winFlag = true;
-            return winFlag;
-        };
-        
-        if (((gameGrid[2] == gameGrid[5]) && (gameGrid[5] == gameGrid[8])) && (gameGrid[2] !== " ")) {
-            winFlag = true;
-            return winFlag;
-        };
-
-        if (((gameGrid[0] == gameGrid[4]) && (gameGrid[4] == gameGrid[8])) && (gameGrid[0] !== " ")) {
-            winFlag = true;
-            return winFlag;
-        };
-        
-        if (((gameGrid[2] == gameGrid[4]) && (gameGrid[4] == gameGrid[6])) && (gameGrid[2] !== " ")) {
-            winFlag = true;
-            return winFlag;
-        };
-
-        if (!gameGrid.includes(" ")) {
-            console.log("It is a draw!")
-            return;
+    function checkWinner() {
+        const board = gameBoard.getBoard();
+        if (((board[0] === board[1]) && (board[1] === (board[2]))) && (board[0] != "")) {
+            return true;
         }
 
-        return winFlag;
+        if (((board[3] === board[4]) && (board[4] === (board[5]))) && (board[5] != ""))  {
+            return true;
+        }
 
-        
+        if (((board[6] === board[7]) && (board[7] === (board[8]))) && (board[8] != "")) {
+            return true;
+        }
 
-};
+        if (((board[0] === board[4]) && (board[4] === (board[8]))) && (board[8] != "")) {
+            return true;
+        }
 
-    return {
-        showGame,
-        addMark,
-        checkWinner
-    }
-})();
+        if (((board[2] === board[4]) && (board[4] === (board[6]))) && (board[6] != "")) {
+            return true;
+        }
 
+        if (((board[0] === board[3]) && (board[3] === (board[6]))) && (board[6] != "")) {
+            return true;
+        }
 
-const createPlayer = function(name, mark) {
-    return {
-        name,
-        mark,
-    }
-};
+        if (((board[1] === board[4]) && (board[4] === (board[7]))) && (board[7] != "")) {
+            return true;
+        }
 
-const player1 = createPlayer("Jawwad", "X");
-const player2 = createPlayer("Hammad", "O");
+        if (((board[2] === board[5]) && (board[5] === (board[8]))) && (board[8] != "")) {
+            return true;
+        }
 
-
-
-
-const gameControl = (function() {
-   let currentPlayer = player1;
-
-   const doTurn = function(selectedBox) {
-    if (gameBoard.addMark(selectedBox,currentPlayer.mark)) {
-        console.log(`${currentPlayer.name} made his move`);
-    } else {
-        console.log(`Invalid move by ${currentPlayer.name}`)
-        return;
+        return false;
     }
 
-    if (gameBoard.checkWinner() == true) {
-        console.log(`Congratulations! ${currentPlayer.name} is the winner!`)
-        return;
+    function checkDraw() {
+        const board = gameBoard.getBoard()
+        for (let i = 0; i < board.length; i++) {
+            if (board[i] === "") {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function swapTurn() {
+        if (currentPlayer === playerOne) {
+            currentPlayer = playerTwo;
+        } else {
+            if (currentPlayer === playerTwo) {
+                currentPlayer = playerOne;
+            }
+        };
     };
 
-    if (currentPlayer == player1) {
-        currentPlayer = player2
-    } else {
-        currentPlayer = player1
+    function startGame(name1, name2) {
+        playerOne = createPlayer(name1, "X");
+        playerTwo = createPlayer(name2, "O");
+        currentPlayer = playerOne;
+        gameBoard.resetBoard()
+        gameOver = false;
+        return "started";
     }
-   }
-   return {
-    doTurn
-   }
+
+    function attemptMark(index) {
+        if (isValid(index) === false) {
+            return "invalid";
+        }
+        gameBoard.updateBoard(index, currentPlayer.mark);
+    }
+
+    function playRound(index) {
+        if (attemptMark(index) === "invalid") {
+            return "invalid"
+        };
+
+        if (checkWinner() === true) {
+            gameOver = true;
+            return "win"
+        };
+
+        if (checkDraw() === true) {
+            gameOver = true;
+            return "draw"
+        };
+
+        swapTurn();
+
+        return "continue";
+
+    }
+
+    function getActivePlayer() {
+        return currentPlayer;
+    }
+
+
+    return { playRound, startGame, getActivePlayer }
 })();
 
 
-gameControl.doTurn(0);
-gameBoard.showGame();
 
-gameControl.doTurn(0);
-gameBoard.showGame();
+const displayController = (function () {
 
-gameControl.doTurn(2);
-gameBoard.showGame();
+    const board = document.getElementById("board");
+    const message = document.getElementById("message");
+    const player1 = document.getElementById("player1-name");
+    const player2 = document.getElementById("player2-name");
+    const startButton = document.getElementById("start-btn");
+    const resetButton = document.getElementById("reset-btn");
+    const currentTurn = document.getElementById("current-turn");
 
-gameControl.doTurn(3);
-gameBoard.showGame();
+    let boardEnabled = false;
 
-gameControl.doTurn(4);
-gameBoard.showGame();
 
-gameControl.doTurn(6)
+    function handleBoard(e) {
+        if (!(boardEnabled)) {
+            return;
+        }
+        if (e.target.classList.contains("cell")) {
+                let index = Number(e.target.dataset.index);
+                const result = gameController.playRound(index);
+
+                if (result === "invalid") {
+                    message.textContent = "invalid choice";
+                    return;
+                } else {
+                    renderBoard();   
+                }
+
+                if (result === "win") {
+                    let activePlayer = gameController.getActivePlayer()
+                    message.textContent = `the winner is ${activePlayer.name}`;
+                    boardEnabled = false;
+                }
+                if (result === "draw") {
+                    message.textContent = `The game is drawn!`;
+                    boardEnabled = false;
+                }
+
+                if (result === "continue") {
+                    let activePlayer = gameController.getActivePlayer()
+                    currentTurn.textContent = `Current Player: ${activePlayer.name}`
+                };
+
+    };
+
+    board.addEventListener("click", handleBoard);
+}
+    
+    function renderBoard() {
+        let boardArray = gameBoard.getBoard();
+        board.textContent = "";
+
+        for (let i = 0; i < boardArray.length; i++) {
+            let newElement = document.createElement("div");
+            newElement.textContent = boardArray[i];
+            newElement.className = "cell";
+            newElement.dataset.index = i;
+            board.appendChild(newElement);
+
+        }
+    }
+
+
+    startButton.addEventListener("click", function() {
+        if ((player1.value === "") || (player2.value === "")) {
+            return message.textContent = "Please enter player names to start the game"
+        }
+        boardEnabled = true;
+        gameController.startGame(player1.value, player2.value);
+        message.textContent = "Game started";
+    });
+
+    resetButton.addEventListener("click", function() {
+        gameBoard.resetBoard();
+        player1.value = "";
+        player2.value = "";
+        renderBoard();
+        boardEnabled = false;
+        message.textContent = "Game was reset";
+    })
+
+    })();
